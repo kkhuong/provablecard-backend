@@ -31,12 +31,13 @@ def hand_detail(request, pk):
     try:
         if request.method == 'PUT': # or POST
             hand = Hand.objects.get(id=pk)
-            # check if you can perform the action on the hand
-            # if yes, do it
-            # if no, return JsonResponse({'message': f'Cannot perform the {action} on hand id {pk}'}, status=status.HTTP_400_BAD_REQUEST)
-            # now hand action is done
-            pass
+            request_data = JSONParser().parse(request)
+            # validate request_data
+            if hand.act(request_data['action']):
+                hand.save()
+            else:
+                return JsonResponse({'message': f"Cannot perform the action {request_data['action']} on hand #{pk}"}, status=status.HTTP_400_BAD_REQUEST)
         hand = Hand.objects.get(id=pk)
         return JsonResponse(hand.to_json())
     except:
-        return JsonResponse({'detail': f'Cannot find hand with id {pk}'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'detail': f"Error finding hand with id {pk}"}, status=status.HTTP_404_NOT_FOUND)
