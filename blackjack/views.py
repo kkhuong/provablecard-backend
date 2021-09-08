@@ -6,7 +6,7 @@ from rest_framework import status
 from django.core.exceptions import BadRequest
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
-from .models import *
+from .models import Hand
 
 
 @api_view(['GET', 'POST'])
@@ -24,6 +24,7 @@ def hand_list(request):
         # validate
         # create new hand
         # return hand info
+        hand = Hand(currency='BTC', wallet_address='3FZbgi29cpjq2GjdwV8eyHuJJnkLtktZc5', transaction_hash='c1596721ece27da5cdfb60018829f29415b206468d4d382f34c7882c75e4772e', initial_bet=0.00001, cards=['As', '2s', '3s', '4s', '5s', '6s', '7s', '8s', '9s', 'Ts', 'Js', 'Qs', 'Ks', 'Ad', '2d', '3d', '4d', '5d', '6d', '7d', '8d', '9d', 'Td', 'Jd', 'Qd', 'Kd', 'Kc', 'Qc', 'Jc', 'Tc', '9c', '8c', '7c', '6c', '5c', '4c', '3c', '2c', 'Ac', 'Kh', 'Qh', 'Jh', 'Th', '9h', '8h', '7h', '6h', '5h', '4h', '3h', '2h', 'Ah'])
         hand_info = request_data # just for now
         return JsonResponse(hand_info, status=status.HTTP_201_CREATED) # or 200 response
 
