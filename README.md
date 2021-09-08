@@ -8,7 +8,7 @@
 Production server is a small VPS with Python 3.8.10 installed.
 
 **Set up PostgreSQL Database**:
-* `sudo apt install postgresql postgresql-contrib`
+* `sudo apt install python-virtualenv postgresql postgresql-contrib libpq-dev`
 * `sudo -i -u postgres`
 * `createuser --interactive`
 * Enter `provablecard` and `y`
