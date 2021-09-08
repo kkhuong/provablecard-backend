@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from decouple import config as envvar
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,16 +21,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'mbgw8^7%%ru00)n9lmxqdu71-w=!96o@njg)&8b9z*$p&!^xr2'
+SECRET_KEY = envvar('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = not eval(envvar('IS_PRODUCTION_ENVIRONMENT'))
 
-ALLOWED_HOSTS = ['165.232.129.94', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+if envvar('SERVER_IP') != '127.0.0.1':
+    ALLOWED_HOSTS += [envvar('SERVER_IP')]
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -76,11 +78,11 @@ WSGI_APPLICATION = 'provablecard.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'provablecard',
-        'USER': 'provablecard',
-        'PASSWORD': 'provablecard',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': envvar('DB_NAME'),
+        'USER': envvar('DB_USER'),
+        'PASSWORD': envvar('DB_PASS'),
+        'HOST': envvar('DB_HOST'),
+        'PORT': envvar('DB_PORT'),
     }
 }
 
