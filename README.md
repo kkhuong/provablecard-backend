@@ -14,13 +14,17 @@ Production server is a small VPS with Python 3.8.10 installed.
 * Enter `provablecard` and `y`
 * `createdb provablecard`
 * `psql`
-* `grant all privileges on database provablecard to provablecard;
+* `grant all privileges on database provablecard to provablecard;`
 
 Essentially we want to create a database named `provablecard` with username `provablecard` and password `provablecard`. Yes this is a bad practice, but we want to build fast.
 
 
-# Deploy this Project
+# Initial Launch
 * Clone the repository
 * Go into the directory
 * `source venv/bin/activate`
 * `pip install -r requirements.txt`
+* `python manage.py migrate`
+
+## Launching 
+* `python manage.py runserver 0.0.0.0:8000`
