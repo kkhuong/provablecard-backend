@@ -32,6 +32,7 @@ Essentially we want to create a database named `provablecard` with username `pro
     DB_USER='provablecard'
     DB_PASS='provablecard'
     IS_PRODUCTION_ENVIRONMENT=False
+    SEED_PREFIX=123456
     ```
 * `source venv/bin/activate`
 * `pip install -r requirements.txt`
