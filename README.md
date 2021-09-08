@@ -39,3 +39,11 @@ Essentially we want to create a database named `provablecard` with username `pro
 
 ## Launching 
 * `python manage.py runserver 0.0.0.0:8000`
+
+# Reseting Database
+* Manually remove all migrations files
+* `psql`
+* `DROP DATABASE provablecard;`
+* `CREATE DATABASE provablecard;`
+* `grant all privileges on database provablecard to provablecard;`
+* Quit psql and then run makemigrations and migrate
