@@ -19,9 +19,20 @@ Production server is a small VPS with Python 3.8.10 installed.
 Essentially we want to create a database named `provablecard` with username `provablecard` and password `provablecard`. Yes this is a bad practice, but we want to build fast.
 
 
-# Initial Launch
+# First Time Setup
 * Clone the repository
 * Go into the directory
+* Create a file named `.env` with the following content
+    ```
+    SERVER_IP=165.232.129.94
+    SECRET_KEY='mbgw8^7%%ru00)n9lmxqdu71-w=!96o@njg)&8b9z*$p&!^xr2'
+    DB_HOST='localhost'
+    DB_PORT=5432
+    DB_NAME='provablecard'
+    DB_USER='provablecard'
+    DB_PASS='provablecard'
+    IS_PRODUCTION_ENVIRONMENT=False
+    ```
 * `source venv/bin/activate`
 * `pip install -r requirements.txt`
 * `python manage.py migrate`
