@@ -43,27 +43,27 @@ class Hand(models.Model):
     finished = models.BooleanField(default=False)
     date = models.DateTimeField(default=timezone.now)
 
-    def draw(self):
+    def _draw(self):
         return self.cards.pop()
 
-    def hit_player_hand(self, hand_number):
-        self.subhands['hands'][hand_number]['cards'].append(self.draw())
+    def _hit_player_hand(self, hand_number):
+        self.subhands['hands'][hand_number]['cards'].append(self._draw())
 
-    def create_subhand(self, bet=0.0, card=None):  # bet = 0.0 for now
+    def _create_subhand(self, bet=0.0, card=None):  # bet = 0.0 for now
         hand = dict({'cards': ([card] if card else []), 'done': False, 'bet': bet})
         self.subhands['hands'].insert(self.current_hand_number + 1, hand)
 
-    def initialize_subhand(self, hand_number):
+    def _initialize_subhand(self, hand_number):
         cards_to_draw = 2 - len(self.subhands['hands'][hand_number]['cards'])
         for _ in range(cards_to_draw):
-            self.hit_player_hand(hand_number)
+            self._hit_player_hand(hand_number)
 
-    def initialize_main_hand(self):
-        self.create_subhand(bet=self.initial_bet)
-        self.initialize_subhand(self.current_hand_number)
-        self.dealer_hand = [self.draw()]
+    def _initialize_main_hand(self):
+        self._create_subhand(bet=self.initial_bet)
+        self._initialize_subhand(self.current_hand_number)
+        self.dealer_hand = [self._draw()]
 
-    def check_and_handle_dealer_bj(self):
+    def _check_and_handle_dealer_bj(self):
         # dealer shows 10, no insurance possible
         if self.dealer_hand[0][0] in 'TJQK' and self.cards[0][0] == 'A':
             self.finished = True
@@ -82,10 +82,10 @@ class Hand(models.Model):
             self.seed = str(int(str(envvar('SEED_PREFIX')), 16) + int(str(self.transaction_hash), 16))
             self.cards = shuffle(cards, int(self.seed))
             self.subhands = dict({'hands': []})
-            self.initialize_main_hand()
+            self._initialize_main_hand()
             
             if self.dealer_hand[0][0] in 'TJQK':
-                self.check_and_handle_dealer_bj()
+                self._check_and_handle_dealer_bj()
 
         super().save(*args, **kwargs)
 
