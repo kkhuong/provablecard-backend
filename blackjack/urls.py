@@ -1,7 +1,8 @@
 from django.urls import path
+from django.conf.urls import url, include 
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='blog-home'),
-    # path('about/', views.about, name='blog-about'),
+    url(r'^api/hand$', views.hand_list),
+    url(r'^api/hand/(?P<pk>[0-9]+)$', views.hand_detail),
 ]
