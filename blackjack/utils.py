@@ -11,3 +11,11 @@ def shuffle(seq, initial_seed=None):
         j = randint(0, i)
         shuffled_seq[i], shuffled_seq[j] = shuffled_seq[j], shuffled_seq[i]
     return shuffled_seq
+
+# here hand is a list of cards
+def can_split(hand):
+    if len(hand) != 2:
+        return False
+    if hand[0][0] == hand[1][0]:
+        return True
+    return hand[0][0] in 'TJQK' and hand[1][0] in 'TJQK'

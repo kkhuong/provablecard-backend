@@ -33,7 +33,7 @@ def hand_detail(request, pk):
             hand = Hand.objects.get(id=pk)
             request_data = JSONParser().parse(request)
             # validate request_data
-            if hand.act(request_data['action']):
+            if hand.act(request_data['action'], additional_bet_amount=float(request_data['amount'])):
                 hand.save()
             else:
                 return JsonResponse({'message': f"Cannot perform the action {request_data['action']} on hand #{pk}"}, status=status.HTTP_400_BAD_REQUEST)
