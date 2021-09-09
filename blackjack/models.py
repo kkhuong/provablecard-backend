@@ -104,6 +104,9 @@ class Hand(models.Model):
             return True
         return False
 
+    def _is_natural_bj(self):
+        return len(self.subhands['hands']) == 1 and len(self.subhands['hands'][0]['cards']) == 2 and total(self.subhands['hands'][0]['cards']) == 21
+
     def _check_and_handle_dealer_bj(self):
         if self._check_dealer_bj():
             self.finished = True
@@ -140,6 +143,11 @@ class Hand(models.Model):
         if self.dealer_hand[0][0] == 'A' and len(self.action_history) == 0:
             ans.append(INSURANCE_YES)
             ans.append(INSURANCE_NO)
+            return ans
+
+        if self._is_natural_bj():
+            # should not need to give other actuions, just pay up
+            self.finished = True
             return ans
 
         hand = self.subhands['hands'][self.current_hand_number]
@@ -226,22 +234,22 @@ class Hand(models.Model):
             if len(self.dealer_hand) == 1:
                 self.dealer_hand.append(self.cards[0])
 
-            is_natural = lambda : False # for now
             # handle naturals
-            if self._check_dealer_bj() and not is_natural():
-                # player lost, hand is over. DONE
-                pass # DONE
-            elif is_natural() and not self._check_dealer_bj():
-                # pay out 1.5*self.initial_bet
-                pass
-            elif is_natural() and self._check_dealer_bj():
-                # pay out self.amount_won + 1.5*self.initial_bet
-                pass
+            if (not self._is_natural_bj()) and self._check_dealer_bj():
+                self.subhands['hands'][0]['done'] = True
+                self.subhands['hands'][0]['paid'] = True
+            elif self._is_natural_bj() and not self._check_dealer_bj():
+                self.amount_won += 2.5*self.initial_bet
+                self.subhands['hands'][0]['done'] = True
+                self.subhands['hands'][0]['paid'] = True
+            elif self._is_natural_bj() and self._check_dealer_bj():
+                self.amount_won += self.initial_bet
+                self.subhands['hands'][0]['done'] = True
+                self.subhands['hands'][0]['paid'] = True
             else:
-                # if got here, then just go ahead and play out dealer hand... and then pay out accordingly
                 print("USUAL HAND NO BJ FOR BOTH")
 
-                dealer_need_to_act = False # player has a live hand
+                dealer_need_to_act = False # check if player has a live hand
                 for i in range(len(self.subhands['hands'])):
                     if total(self.subhands['hands'][i]['cards']) <= 21 and not self.subhands['hands'][i]['paid']:
                         dealer_need_to_act = True
