@@ -60,6 +60,7 @@ def is_busted(hand):
     val, _ = value(hand)
     return val > 21
 
+
 class Hand(models.Model):
     currency = models.CharField(max_length=100)
     wallet_address = models.CharField(max_length=100)
@@ -124,10 +125,8 @@ class Hand(models.Model):
 
     def _resolve_payout(self, dealer_score):
         for hand_number in range(len(self.subhands['hands'])):
-            print("RESOLVING PAYMENT, GOT INTO FOR LOOP", hand_number)
             if not self.subhands['hands'][hand_number]['paid']:
                 score = total(self.subhands['hands'][hand_number]['cards'])
-                print(f"PAYMENT RESOLVER FIGURED OUT HAND {hand_number} SCORE", score)
                 if score > 21:
                     score = -1
                 if score > dealer_score:
@@ -169,20 +168,16 @@ class Hand(models.Model):
         return ans
 
     def act(self, action, additional_bet_amount=0.0):
-        print("GOT INTO ACT FUNCTION")
         if not (len(action) == 1 and action in self._get_action_set()):
             return False
 
-        print("ACT FUNCTION DECIDED THAT ACTION IS VALID")
         if action == INSURANCE_NO:
             self._check_and_handle_dealer_bj()
         elif action == INSURANCE_YES:
             # check if payment for additional_bet_amount has been received
-            print("WANT TO BUY INSURANCE")
             if self._check_and_handle_dealer_bj():
                 self.amount_won += 3*additional_bet_amount
         elif action == SURRENDER:
-            print("GOT INTO SURRENDER")
             self.amount_won += 0.5 * self.subhands['hands'][self.current_hand_number]['bet']
             self.subhands['hands'][self.current_hand_number]['paid'] = True
             self.subhands['hands'][self.current_hand_number]['done'] = True
@@ -203,18 +198,14 @@ class Hand(models.Model):
                 self.subhands['hands'][self.current_hand_number]['done'] = True
                 self.current_hand_number += 1
         elif action == STAND:
-            print("GOT INTO STAND LOGIC")
             self.subhands['hands'][self.current_hand_number]['done'] = True
             self.current_hand_number += 1
 
-        # no more action
-        print("CURRENT HAND NUMBER", self.current_hand_number)
+        # no more actio
         if self.current_hand_number >= len(self.subhands['hands']):
-            print("GOT HERE 9472")
             self.finished = True
 
         self.action_history.append(action)
-        print("GOT HERE2")
         return True
 
     def save(self, *args, **kwargs):
@@ -224,7 +215,7 @@ class Hand(models.Model):
             self.subhands = dict({'hands': []})
             self._initialize_main_hand()
             
-            # dealer bj no insurance possible
+            # dealer bj with no insurance possible
             if self.dealer_hand[0][0] in 'TJQK':
                 self._check_and_handle_dealer_bj()
 
@@ -249,26 +240,18 @@ class Hand(models.Model):
                 self.subhands['hands'][0]['done'] = True
                 self.subhands['hands'][0]['paid'] = True
             else:
-                print("USUAL HAND NO BJ FOR BOTH")
-
                 dealer_need_to_act = False # check if player has a live hand
                 for i in range(len(self.subhands['hands'])):
                     if total(self.subhands['hands'][i]['cards']) <= 21 and not self.subhands['hands'][i]['paid']:
                         dealer_need_to_act = True
                         break
 
-                print("DEALER NEED TO PLAY:", dealer_need_to_act)
                 if dealer_need_to_act:
                     self._resolve_dealer_hand()
-                    print("FINISH RESOLVING DEALER HAND", self.dealer_hand)
                 dealer_score = (0 if is_busted(self.dealer_hand) else total(self.dealer_hand))
-                print("DEALER SCORE", dealer_score)
                 self._resolve_payout(dealer_score)
-                print("FINISH RESOLVING PAYMENTS")
 
-        print("BEFORE SAVING OBJECT")
         super().save(*args, **kwargs)
-        print("AFTER SAVING OBJECT")
 
     def to_json(self):
         obj = {
