@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from decouple import config as envvar
-from .utils import shuffle, can_split
+from .utils import shuffle, can_split, float_equal
 
 
 DEFAULT_DECK = ['As', '2s', '3s', '4s', '5s', '6s', '7s', '8s', '9s', 'Ts', 'Js', 'Qs', 'Ks', 'Ad', '2d', '3d', '4d', '5d', '6d', '7d', '8d', '9d', 'Td', 'Jd', 'Qd', 'Kd', 'Kc', 'Qc', 'Jc', 'Tc', '9c', '8c', '7c', '6c', '5c', '4c', '3c', '2c', 'Ac', 'Kh', 'Qh', 'Jh', 'Th', '9h', '8h', '7h', '6h', '5h', '4h', '3h', '2h', 'Ah']
@@ -175,6 +175,9 @@ class Hand(models.Model):
             self._check_and_handle_dealer_bj()
         elif action == INSURANCE_YES:
             # check if payment for additional_bet_amount has been received
+            # make sure bet amount is valid. if player send extra money, the rest will be kept
+            if additional_bet_amount > 0.5*self.initial_bet:
+                additional_bet_amount = 0.5*self.initial_bet
             if self._check_and_handle_dealer_bj():
                 self.amount_won += 3*additional_bet_amount
         elif action == SURRENDER:
@@ -183,10 +186,15 @@ class Hand(models.Model):
             self.subhands['hands'][self.current_hand_number]['done'] = True
             self.current_hand_number += 1
         elif action == SPLIT:
-            # check if payment for additional_bet_amount has been received
             raise NotImplemented
+            # check if payment for additional_bet_amount has been received
+            if additional_bet_amount <= self.initial_bet:
+                raise ValueError("To split, you must put up an amount same as original bet")
         elif action == DOUBLE:
             # check if payment for additional_bet_amount has been received
+            # make sure bet amount is valid. if player send extra money, the rest will be kept
+            if additional_bet_amount > self.initial_bet:
+                additional_bet_amount = self.initial_bet
             self._hit_player_hand(self.current_hand_number)
             self.subhands['hands'][self.current_hand_number]['bet'] += additional_bet_amount
             self.subhands['hands'][self.current_hand_number]['done'] = True

@@ -33,11 +33,14 @@ def hand_detail(request, pk):
             hand = Hand.objects.get(id=pk)
             request_data = JSONParser().parse(request)
             # validate request_data
-            if hand.act(request_data['action'], additional_bet_amount=float(request_data['amount'])):
-                hand.save()
-            else:
-                return JsonResponse({'message': f"Cannot perform the action {request_data['action']} on hand #{pk}"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                if hand.act(request_data['action'], additional_bet_amount=float(request_data['amount'])):
+                    hand.save()
+                else:
+                    return JsonResponse({'message': f"Cannot perform the action {request_data['action']} on hand #{pk}"}, status=status.HTTP_400_BAD_REQUEST)
+            except ValueError as e:
+                return JsonResponse({'message': f"{str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
         hand = Hand.objects.get(id=pk)
         return JsonResponse(hand.to_json())
     except:
-        return JsonResponse({'detail': f"Error finding hand with id {pk}"}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'detail': f"Error handling hand with id {pk}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

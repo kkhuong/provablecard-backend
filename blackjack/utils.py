@@ -1,6 +1,9 @@
 from random import seed, randint
 import copy
 
+def float_equal(a, b, tol=1e-9):
+    return abs(a-b) <= tol
+
 def shuffle(seq, initial_seed=None):
     if initial_seed:
         seed(initial_seed)
