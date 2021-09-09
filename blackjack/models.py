@@ -19,6 +19,9 @@ STAND = 's'
 BJ_HARD = 'hard'
 BJ_SOFT = 'soft'
 
+# config
+DEALER_SOFT17 = HIT
+
 def rank_to_value(card):
     r = card[0]
     rnks = '_A23456789TJQK'
@@ -110,17 +113,25 @@ class Hand(models.Model):
             return True
         return False
 
-    def _evaluate_player_hand(self, hand_number):
-        score = value(self.subhands['hands'][hand_number]['cards'])
-        print("ABLE TO COMPUTE HAND")
-        if score > 21:
-            self.subhands['hands'][hand_number]['score'] = -1
-            return (-1, False)
+    def _resolve_dealer_hand(self):
+        val, hs = value(self.dealer_hand)
+        while 0 < val < 17 or (val == 17 and hs == BJ_SOFT and DEALER_SOFT17 == HIT):
+            self.dealer_hand.append(self._draw())
+            val, hs = value(self.dealer_hand)
 
-        self.subhands['hands'][hand_number]['score'] = score
-        print("ABLE TO SET SCORE")
-        return (score, True)
-
+    def _resolve_payout(self, dealer_score):
+        for hand_number in range(len(self.subhands['hands'])):
+            print("RESOLVING PAYMENT, GOT INTO FOR LOOP", hand_number)
+            if not self.subhands['hands'][hand_number]['paid']:
+                score = total(self.subhands['hands'][hand_number]['cards'])
+                print(f"PAYMENT RESOLVER FIGURED OUT HAND {hand_number} SCORE", score)
+                if score > 21:
+                    score = -1
+                if score > dealer_score:
+                    self.amount_won += 2*self.subhands['hands'][hand_number]['bet']
+                elif score == dealer_score:
+                    self.amount_won += self.subhands['hands'][hand_number]['bet']
+            self.subhands['hands'][hand_number]['paid'] = True
 
     def _get_action_set(self):
         ans = []
@@ -162,7 +173,7 @@ class Hand(models.Model):
             # check if payment for additional_bet_amount has been received
             print("WANT TO BUY INSURANCE")
             if self._check_and_handle_dealer_bj():
-                self.amount_won += 2*additional_bet_amount
+                self.amount_won += 3*additional_bet_amount
         elif action == SURRENDER:
             print("GOT INTO SURRENDER")
             self.amount_won += 0.5 * self.subhands['hands'][self.current_hand_number]['bet']
@@ -181,6 +192,7 @@ class Hand(models.Model):
         elif action == HIT:
             self._hit_player_hand(self.current_hand_number)
             if is_busted(self.subhands['hands'][self.current_hand_number]['cards']):
+                self.subhands['hands'][self.current_hand_number]['paid'] = True
                 self.subhands['hands'][self.current_hand_number]['done'] = True
                 self.current_hand_number += 1
         elif action == STAND:
@@ -229,19 +241,20 @@ class Hand(models.Model):
                 # if got here, then just go ahead and play out dealer hand... and then pay out accordingly
                 print("USUAL HAND NO BJ FOR BOTH")
 
-                need_to_have_dealer_play_her_hand = False
+                dealer_need_to_act = False # player has a live hand
                 for i in range(len(self.subhands['hands'])):
-                    _, logic = self._evaluate_player_hand(i)
-                    need_to_have_dealer_play_her_hand = need_to_have_dealer_play_her_hand or logic
+                    if total(self.subhands['hands'][i]['cards']) <= 21 and not self.subhands['hands'][i]['paid']:
+                        dealer_need_to_act = True
+                        break
 
-                # see if dealer needs to act
-                if need_to_have_dealer_play_her_hand:
-                    # play out dealer
-                    # go thru all subhands, if paid, skip. else, compare score and pay if strictly higher
-                    pass
-                else:
-                    # all busted hands, return doing nothing
-                    pass # DONE
+                print("DEALER NEED TO PLAY:", dealer_need_to_act)
+                if dealer_need_to_act:
+                    self._resolve_dealer_hand()
+                    print("FINISH RESOLVING DEALER HAND", self.dealer_hand)
+                dealer_score = (0 if is_busted(self.dealer_hand) else total(self.dealer_hand))
+                print("DEALER SCORE", dealer_score)
+                self._resolve_payout(dealer_score)
+                print("FINISH RESOLVING PAYMENTS")
 
         print("BEFORE SAVING OBJECT")
         super().save(*args, **kwargs)
