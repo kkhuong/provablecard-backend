@@ -147,7 +147,6 @@ class Hand(models.Model):
 
         if self._is_natural_bj():
             # should not need to give other actuions, just pay up
-            self.finished = True
             return ans
 
         hand = self.subhands['hands'][self.current_hand_number]
@@ -228,6 +227,9 @@ class Hand(models.Model):
             # dealer bj no insurance possible
             if self.dealer_hand[0][0] in 'TJQK':
                 self._check_and_handle_dealer_bj()
+
+        if len(self._get_action_set()) == 0:
+            self.finished = True
 
         if self.finished:
             # reveal holecard
