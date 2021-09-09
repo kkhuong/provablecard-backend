@@ -267,7 +267,7 @@ class Hand(models.Model):
             'currency': str(self.currency),
             'address': str(self.wallet_address),
             'dealer_hand': self.dealer_hand,
-            'subhands': self.subhands,
+            'subhands': self.subhands['hands'],
             'action_set': self._get_action_set(),
             'history': "".join(self.action_history),
             'done': self.finished,

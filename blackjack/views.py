@@ -32,7 +32,7 @@ def hand_detail(request, pk):
         if request.method == 'PUT': # or POST
             hand = Hand.objects.get(id=pk)
             request_data = JSONParser().parse(request)
-            # validate request_data
+            # validate request_data. if action is insurance_yes, split, double, make sure amount is received before letting user continue
             try:
                 if hand.act(request_data['action'], additional_bet_amount=float(request_data['amount'])):
                     hand.save()
