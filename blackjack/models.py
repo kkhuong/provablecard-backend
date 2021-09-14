@@ -272,7 +272,7 @@ class Hand(models.Model):
             'history': "".join(self.action_history),
             'done': self.finished,
             'amount_won': float(self.amount_won),
-            'seed': int(self.seed), # remove this in production
-            'deck': self.cards, # remove this in production
+            # 'seed': int(self.seed), # remove this in production
+            # 'deck': self.cards, # remove this in production
         }
         return obj
