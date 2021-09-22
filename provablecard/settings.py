@@ -26,13 +26,14 @@ SECRET_KEY = envvar('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = not eval(envvar('IS_PRODUCTION_ENVIRONMENT'))
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 if envvar('SERVER_IP') != '127.0.0.1':
     ALLOWED_HOSTS += [envvar('SERVER_IP')]
 
 
 # Application definition
 INSTALLED_APPS = [
+    'blackjack.apps.BlackjackConfig',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
